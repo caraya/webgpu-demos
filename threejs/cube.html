@@ -36,16 +36,15 @@
 		<script type="importmap">
 			{
 				"imports": {
-					"three": "/build/three.webgpu.js",
-					"three/addons/": "/examples/jsm/"
+					"three": "/node_modules/three/build/three.webgpu.js",
+					"three/addons/": "/node_modules/three/examples/jsm/"
 				}
 			}
 		</script>
 
 		<script type="module">
 			import * as THREE from 'three'
-			import { WebGPURenderer } from 'three/webgpu';
-			
+			import { WebGPURenderer } from 'three';
 			// --- Core Scene Setup ---
 			let camera, scene, renderer, mesh;
 			
