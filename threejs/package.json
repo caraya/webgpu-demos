@@ -1,20 +1,21 @@
 {
-  "name": "webgpu-example",
+  "name": "threejs",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "vite.config.js",
   "scripts": {
     "dev": "vite",
+    "build": "vite build",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
-  "author": "Carlos Araya <carlos.araya@gmail.com> (https://publishing-project.rivendellweb.net/)",
-  "license": "MIT",
-  "type": "commonjs",
-  "dependencies": {
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",  "dependencies": {
     "three": "^0.180.0"
   },
   "devDependencies": {
-    "vite": "^7.0.0"
+    "typescript": "^5.9.2",
+    "vite": "^7.1.7"
   }
 }
