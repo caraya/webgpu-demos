@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<title>Raw WebGPU - Hello Triangle</title>
+		<style>
+			body { margin: 0; background-color: #1a1a1a; color: white; font-family: sans-serif; text-align: center; }
+			canvas { background-color: #000; margin-top: 20px; }
+			#error {
+				position: absolute;
+				top: 50%;
+				left: 50%;
+				transform: translate(-50%, -50%);
+				background-color: #ff3333;
+				padding: 20px;
+				border-radius: 8px;
+				display: none; /* Hidden by default */
+			}
+		</style>
+	</head>
+	<body>
+		<h1>Raw WebGPU "Hello Triangle"</h1>
+		<p>This example renders a single triangle using the WebGPU API directly, without any libraries.</p>
+		<canvas width="640" height="480"></canvas>
+		<div id="error">
+			<h2>WebGPU Not Available</h2>
+			<p>Your browser does not support WebGPU, or it is not enabled. Please use a recent version of Chrome or Edge and ensure WebGPU is enabled in `about:flags` if needed.</p>
+		</div>
+		<script type="module">
+			async function main() {
+				if (!navigator.gpu) {
+					document.getElementById('error').style.display = 'block';
+					throw new Error("WebGPU not supported on this browser.");
+				}
+				const adapter = await navigator.gpu.requestAdapter();
+				if (!adapter) { throw new Error("No appropriate GPUAdapter found."); }
+				const device = await adapter.requestDevice();
+				const canvas = document.querySelector('canvas');
+				const context = canvas.getContext('webgpu');
+				const presentationFormat = navigator.gpu.getPreferredCanvasFormat();
+				context.configure({ device, format: presentationFormat, alphaMode: 'premultiplied' });
+				const positions = new Float32Array([0.0, 0.5, -0.5, -0.5, 0.5, -0.5]);
+				const colors = new Float32Array([1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0]);
+				const positionBuffer = device.createBuffer({
+					size: positions.byteLength,
+					usage: GPUBufferUsage.VERTEX | GPUBufferUsage.COPY_DST,
+					mappedAtCreation: true,
+					});
+					new Float32Array(positionBuffer.getMappedRange()).set(positions);
+					positionBuffer.unmap();
+					const colorBuffer = device.createBuffer({
+						size: colors.byteLength,
+						usage: GPUBufferUsage.VERTEX | GPUBufferUsage.COPY_DST,
+						mappedAtCreation: true,
+						});
+						new Float32Array(colorBuffer.getMappedRange()).set(colors);
+						colorBuffer.unmap();
+						const shaderModule = device.createShaderModule({
+							code: `
+							struct VertexOutput { @builtin(position) position : vec4<f32>, @location(0) color : vec3<f32> };
+							@vertex fn vs_main(@location(0) in_pos : vec2<f32>, @location(1) in_color : vec3<f32>) -> VertexOutput {
+								var out : VertexOutput;
+								out.position = vec4<f32>(in_pos, 0.0, 1.0);
+								out.color = in_color;
+								return out;
+							}
+							@fragment fn fs_main(in : VertexOutput) -> @location(0) vec4<f32> { return vec4<f32>(in.color, 1.0); }
+							`,
+							});
+							const pipeline = device.createRenderPipeline({
+								layout: 'auto',
+								vertex: {
+									module: shaderModule,
+									entryPoint: 'vs_main',
+									buffers: [
+									{ arrayStride: 2 * 4, attributes: [{ shaderLocation: 0, offset: 0, format: 'float32x2' }] },
+									{ arrayStride: 3 * 4, attributes: [{ shaderLocation: 1, offset: 0, format: 'float32x3' }] },
+									],
+									},
+									fragment: { module: shaderModule, entryPoint: 'fs_main', targets: [{ format: presentationFormat }] },
+									primitive: { topology: 'triangle-list' },
+									});
+									function frame() {
+										const textureView = context.getCurrentTexture().createView();
+										const commandEncoder = device.createCommandEncoder();
+										const passEncoder = commandEncoder.beginRenderPass({
+											colorAttachments: [{ view: textureView, clearValue: { r: 0.1, g: 0.1, b: 0.1, a: 1.0 }, loadOp: 'clear', storeOp: 'store' }],
+											});
+											passEncoder.setPipeline(pipeline);
+											passEncoder.setVertexBuffer(0, positionBuffer);
+											passEncoder.setVertexBuffer(1, colorBuffer);
+											passEncoder.draw(3, 1, 0, 0);
+											passEncoder.end();
+											device.queue.submit([commandEncoder.finish()]);
+										}
+										frame();
+									}
+									main().catch(err => {
+										console.error(err);
+										document.getElementById('error').style.display = 'block';
+										document.querySelector('#error p').textContent = err.message;
+										});
+		</script>
+	</body>
+</html>

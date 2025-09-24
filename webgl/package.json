@@ -1,0 +1,17 @@
+{
+  "name": "webgl",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "dev": "vite",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "Carlos Araya <carlos.araya@gmail.com> (https://publishing-project.rivendellweb.net/)",
+  "license": "MIT",
+  "type": "commonjs",
+  "devDependencies": {
+    "vite": "^7.0.0"
+  }
+}
